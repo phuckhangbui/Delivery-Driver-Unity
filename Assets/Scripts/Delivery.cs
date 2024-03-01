@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
+using System.Linq;
+
 
 public class Delivery : MonoBehaviour
 {
@@ -12,22 +15,53 @@ public class Delivery : MonoBehaviour
     [SerializeField]
     Color32 noPackageColor = new Color32(1, 1, 1, 1);
 
-    int packageNotDeliver;
-
     SpriteRenderer spriteRenderer;
     GameObject[] packages;
+
+    GameObject[] customers;
+
+    [SerializeField] float destroyDelay = 0.5f;
+    bool hasPackage = false;
+
+    int totalPackage;
+    int remainPackage;
+
+    [SerializeField]
+    private TextMeshProUGUI status;
+
 
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        packageNotDeliver = GameObject.FindGameObjectsWithTag("Package").Length;
         packages = GameObject.FindGameObjectsWithTag("Package");
+        customers = GameObject.FindGameObjectsWithTag("Customer");
+
         packages[1].SetActive(false);
         packages[2].SetActive(false);
+
+        totalPackage = packages.Length;
+        remainPackage = packages.Length;
+
+        setStatusText(totalPackage, remainPackage, hasPackage);
+
     }
 
-    [SerializeField] float destroyDelay = 0.5f;
-    bool hasPackage = false;
+    void setStatusText(int totalPackage, int remainPackage, bool hasPackage)
+    {
+        string message = "Total Package: " + totalPackage + "<br>Remain Package: " + remainPackage;
+        if (hasPackage)
+        {
+            message = message + "<br>Has Package in car";
+        }
+        else
+        {
+            message = message + "<br>No Package in car";
+        }
+
+        status.text = message;
+    }
+
+
 
     void OnCollisionEnter2D(Collision2D other)
     {
@@ -48,15 +82,17 @@ public class Delivery : MonoBehaviour
         {
             Debug.Log("Package Deliver");
             hasPackage = false;
-            packageNotDeliver--;
+            remainPackage--;
             spriteRenderer.color = noPackageColor;
-            if (packageNotDeliver == 0)
+            Destroy(other.gameObject, destroyDelay);
+            if (remainPackage == 0)
             {
                 Debug.Log("Win game!");
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                SceneManager.LoadSceneAsync(1);
             }
-            packages[packageNotDeliver].SetActive(true);
+            packages[remainPackage].SetActive(true);
         }
+        setStatusText(totalPackage, remainPackage, hasPackage);
     }
 
 
