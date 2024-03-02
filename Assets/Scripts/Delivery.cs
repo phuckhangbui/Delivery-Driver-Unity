@@ -1,99 +1,87 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
-using System.Linq;
-
+using System.Collections.Generic;
 
 public class Delivery : MonoBehaviour
 {
-    [SerializeField]
-    Color32 hasPackageColor = new Color32(1, 1, 1, 1);
-
-    [SerializeField]
-    Color32 noPackageColor = new Color32(1, 1, 1, 1);
+    [SerializeField] Color32 hasPackageColor = new Color32(1, 1, 1, 1);
+    [SerializeField] Color32 noPackageColor = new Color32(1, 1, 1, 1);
+    [SerializeField] float destroyDelay = 0.5f;
+    [SerializeField] private TextMeshProUGUI status;
 
     SpriteRenderer spriteRenderer;
-    GameObject[] packages;
+    List<GameObject> packages = new List<GameObject>();
+    List<GameObject> customers = new List<GameObject>();
 
-    GameObject[] customers;
-
-    [SerializeField] float destroyDelay = 0.5f;
+    int totalPackages;
+    int deliveredPackages;
     bool hasPackage = false;
-
-    int totalPackage;
-    int remainPackage;
-
-    [SerializeField]
-    private TextMeshProUGUI status;
-
 
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        packages = GameObject.FindGameObjectsWithTag("Package");
-        customers = GameObject.FindGameObjectsWithTag("Customer");
+        packages.AddRange(GameObject.FindGameObjectsWithTag("Package"));
+        customers.AddRange(GameObject.FindGameObjectsWithTag("Customer"));
 
-        packages[1].SetActive(false);
-        packages[2].SetActive(false);
+        totalPackages = packages.Count;
+        deliveredPackages = 0;
 
-        totalPackage = packages.Length;
-        remainPackage = packages.Length;
+        SetStatusText();
+        foreach (GameObject package in packages)
+        {
+            package.SetActive(false);
+        }
 
-        setStatusText(totalPackage, remainPackage, hasPackage);
-
+        if (packages.Count > 0)
+        {
+            packages[0].SetActive(true);
+        }
     }
 
-    void setStatusText(int totalPackage, int remainPackage, bool hasPackage)
+    void SetStatusText()
     {
-        string message = "Total Package: " + totalPackage + "<br>Remain Package: " + remainPackage;
-        if (hasPackage)
-        {
-            message = message + "<br>Has Package in car";
-        }
-        else
-        {
-            message = message + "<br>No Package in car";
-        }
-
+        string message = "Total Packages: " + totalPackages + "\nDelivered: " + deliveredPackages;
+        message += hasPackage ? "\nHas Package in car" : "\nNo Package in car";
         status.text = message;
-    }
-
-
-
-    void OnCollisionEnter2D(Collision2D other)
-    {
-        Debug.Log("Ouch!");
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.tag == "Package" && !hasPackage)
+        if (other.CompareTag("Package") && !hasPackage)
         {
             Debug.Log("Hit Package");
             hasPackage = true;
             spriteRenderer.color = hasPackageColor;
             Destroy(other.gameObject, destroyDelay);
-        };
-
-        if (other.tag == "Customer" && hasPackage)
+            packages.Remove(other.gameObject);
+            ActivateNextPackage();
+        }
+        else if (other.CompareTag("Customer") && hasPackage)
         {
             Debug.Log("Package Deliver");
             hasPackage = false;
-            remainPackage--;
+            deliveredPackages++;
             spriteRenderer.color = noPackageColor;
             Destroy(other.gameObject, destroyDelay);
-            if (remainPackage == 0)
+            if (deliveredPackages >= totalPackages)
             {
                 Debug.Log("Win game!");
                 SceneManager.LoadSceneAsync(1);
             }
-            packages[remainPackage].SetActive(true);
         }
-        setStatusText(totalPackage, remainPackage, hasPackage);
+        SetStatusText();
     }
 
-
+    void ActivateNextPackage()
+    {
+        foreach (GameObject package in packages)
+        {
+            if (!package.activeSelf)
+            {
+                package.SetActive(true);
+                return;
+            }
+        }
+    }
 }

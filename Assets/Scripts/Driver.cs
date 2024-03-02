@@ -93,6 +93,7 @@ public class Driver : MonoBehaviour
         if (other.tag == "SpeedUp")
         {
             moveSpeed = boostSpeed;
+            Debug.Log("SPEED UP");
             spriteRenderer.color = speedUpColor;
         }
     }

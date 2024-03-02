@@ -2553,7 +2553,6 @@ MonoBehaviour:
     rgba: 4293980296
   timeText: {fileID: 1129078839}
   hornSFX: {fileID: 8300000, guid: 39c03d4857c758541b7a93fc52c07a3c, type: 3}
-  carSoundSFX: {fileID: 8300000, guid: 7f2aeeb80fccf3843a5378ba58c57f33, type: 3}
   timerIsRunning: 0
 --- !u!82 &802139558
 AudioSource:
