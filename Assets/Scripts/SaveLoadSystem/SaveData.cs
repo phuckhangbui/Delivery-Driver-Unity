@@ -10,6 +10,8 @@ namespace SaveLoadSystem
         public int index = 1;
         [SerializeField] private float myFloat = 5.7f;
 
+        public bool ourBool = true;
+        public Vector2 ourVector = new Vector2(0, 0);
 
     }
 }
