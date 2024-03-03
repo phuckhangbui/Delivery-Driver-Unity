@@ -59,7 +59,7 @@ public class Driver : MonoBehaviour
                 Debug.Log("Time has run out!");
                 timeRemaining = 0;
                 timerIsRunning = false;
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                SceneManager.LoadSceneAsync(0);
             }
         }
 
@@ -93,6 +93,7 @@ public class Driver : MonoBehaviour
         if (other.tag == "SpeedUp")
         {
             moveSpeed = boostSpeed;
+            Debug.Log("SPEED UP");
             spriteRenderer.color = speedUpColor;
         }
     }
