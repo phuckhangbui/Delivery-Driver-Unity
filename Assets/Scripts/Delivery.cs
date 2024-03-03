@@ -1,7 +1,9 @@
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using TMPro;
+using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
+using UnityEngine;
+using TMPro;
+using UnityEngine.SceneManagement;
 
 public class Delivery : MonoBehaviour
 {
@@ -18,16 +20,60 @@ public class Delivery : MonoBehaviour
     int deliveredPackages;
     bool hasPackage = false;
 
+    int destroyPackageForRandomNumber;
+
+    int nextSceneNumber;
     void Start()
     {
+        int sceneOrder = SceneManager.GetActiveScene().buildIndex;
+        nextSceneNumber = sceneOrder + 1;
+        if (nextSceneNumber > 2)
+        {
+            nextSceneNumber = 0;
+        }
+        PlayerPrefs.SetInt("nextSceneNumber", nextSceneNumber);
+
+
         spriteRenderer = GetComponent<SpriteRenderer>();
         packages.AddRange(GameObject.FindGameObjectsWithTag("Package"));
         customers.AddRange(GameObject.FindGameObjectsWithTag("Customer"));
 
-        totalPackages = packages.Count;
+        destroyPackageForRandomNumber = (int)packages.Count / 2;
         deliveredPackages = 0;
 
+
+        System.Random random = new System.Random();
+        List<GameObject> packagesToDestroy = new List<GameObject>(packages); // Copy the original list
+
+        for (int i = 0; i < destroyPackageForRandomNumber; i++)
+        {
+            Debug.Log("Loops start here");
+
+            int index = random.Next(0, packagesToDestroy.Count); // Generate random index within the current size of the list
+            GameObject packageToDestroy = packagesToDestroy[index];
+            Destroy(packageToDestroy); // Destroy the GameObject
+            packagesToDestroy.RemoveAt(index); // Remove the destroyed GameObject from the list
+        }
+
+
+        // for (int i = 0; i < notDestroyPackageList.Count; i++)
+        // {
+        //     if (notDestroyPackageList.Contains(i))
+        //     {
+        //         // not destroy when in the list
+        //     }
+        //     else
+        //     {
+        //         Destroy(packages[i], 0);
+        //     }
+        // }
+
+        packages.Clear();
+        packages.AddRange(packagesToDestroy);
+
+        totalPackages = packages.Count;
         SetStatusText();
+
         foreach (GameObject package in packages)
         {
             package.SetActive(false);
@@ -62,12 +108,13 @@ public class Delivery : MonoBehaviour
             Debug.Log("Package Deliver");
             hasPackage = false;
             deliveredPackages++;
+            totalPackages--;
             spriteRenderer.color = noPackageColor;
             Destroy(other.gameObject, destroyDelay);
-            if (deliveredPackages >= totalPackages)
+            if (totalPackages == 0)
             {
                 Debug.Log("Win game!");
-                SceneManager.LoadSceneAsync(1);
+                SceneManager.LoadSceneAsync(nextSceneNumber);
             }
         }
         SetStatusText();
